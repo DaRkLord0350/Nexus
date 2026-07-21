@@ -1,0 +1,24 @@
+[Unit]
+Description=CommerceOS Next.js frontend (only needed if hosting on EC2 instead of Amplify)
+After=network.target
+
+[Service]
+Type=simple
+User=commerceos
+Group=commerceos
+WorkingDirectory=/opt/commerceos/apps/web
+Environment=NODE_ENV=production
+Environment=PORT=3000
+EnvironmentFile=-/opt/commerceos/apps/web/.env.production.local
+ExecStart=/usr/bin/npm run start
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

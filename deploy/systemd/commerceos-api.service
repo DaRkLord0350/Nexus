@@ -1,0 +1,33 @@
+[Unit]
+Description=CommerceOS FastAPI backend (gunicorn + uvicorn workers)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=commerceos
+Group=commerceos
+WorkingDirectory=/opt/commerceos/apps/api
+EnvironmentFile=/opt/commerceos/apps/api/.env.production
+EnvironmentFile=-/opt/commerceos/shared/runtime.env
+ExecStart=/opt/commerceos/apps/api/.venv/bin/gunicorn app.main:app \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --workers 4 \
+    --bind 127.0.0.1:8000 \
+    --timeout 60 \
+    --graceful-timeout 30 \
+    --access-logfile - \
+    --error-logfile -
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
