@@ -607,3 +607,429 @@ export interface TaxRateItem {
   created_at: string;
   updated_at: string;
 }
+
+export type WarehouseType = 'main' | 'retail' | 'returns' | 'third_party';
+
+export interface WarehouseItem {
+  id: string;
+  name: string;
+  code: string;
+  warehouse_type: WarehouseType;
+  email?: string | null;
+  phone?: string | null;
+  country?: string | null;
+  state?: string | null;
+  city?: string | null;
+  zipcode?: string | null;
+  address?: string | null;
+  is_default: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WarehouseListResponse {
+  items: WarehouseItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type WarehouseZoneType = 'receiving' | 'storage' | 'picking' | 'packing' | 'returns' | 'damaged';
+
+export interface WarehouseZoneItem {
+  id: string;
+  warehouse_id: string;
+  name: string;
+  code: string;
+  zone_type: WarehouseZoneType;
+  description?: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WarehouseZoneListResponse {
+  items: WarehouseZoneItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type WarehouseBinStatus = 'active' | 'full' | 'blocked' | 'inactive';
+
+export interface WarehouseBinItem {
+  id: string;
+  warehouse_id: string;
+  zone_id?: string | null;
+  code: string;
+  aisle?: string | null;
+  rack?: string | null;
+  shelf?: string | null;
+  bin_number?: string | null;
+  capacity?: number | null;
+  status: WarehouseBinStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WarehouseBinListResponse {
+  items: WarehouseBinItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface InventoryItem {
+  id: string;
+  product_id: string;
+  variant_id?: string | null;
+  warehouse_id: string;
+  bin_id?: string | null;
+  quantity_available: number;
+  quantity_reserved: number;
+  quantity_incoming: number;
+  quantity_damaged: number;
+  quantity_returned: number;
+  minimum_stock?: number | null;
+  maximum_stock?: number | null;
+  reorder_point?: number | null;
+  average_cost?: number | null;
+  last_counted_at?: string | null;
+  low_stock_notified_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InventoryListResponse {
+  items: InventoryItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type InventoryTransactionType =
+  | 'receive'
+  | 'sale'
+  | 'return'
+  | 'transfer'
+  | 'adjustment'
+  | 'damage'
+  | 'cycle_count'
+  | 'manufacturing'
+  | 'purchase';
+
+export interface InventoryTransactionItem {
+  id: string;
+  inventory_id: string;
+  product_id: string;
+  variant_id?: string | null;
+  warehouse_id: string;
+  type: InventoryTransactionType;
+  quantity: number;
+  quantity_before?: number | null;
+  quantity_after?: number | null;
+  reference_type?: string | null;
+  reference_id?: string | null;
+  user_id?: string | null;
+  notes?: string | null;
+  occurred_at: string;
+  created_at: string;
+}
+
+export interface InventoryTransactionListResponse {
+  items: InventoryTransactionItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type BarcodeFormat = 'ean13' | 'upc' | 'code128' | 'qr';
+
+export interface BarcodeItem {
+  id: string;
+  product_id?: string | null;
+  variant_id?: string | null;
+  value: string;
+  format: BarcodeFormat;
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BarcodeListResponse {
+  items: BarcodeItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface QRCodeItem {
+  id: string;
+  entity_type: string;
+  entity_id: string;
+  value: string;
+  image_url?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QRCodeListResponse {
+  items: QRCodeItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type BatchStatus = 'active' | 'depleted' | 'expired' | 'quarantined' | 'recalled';
+
+export interface BatchItem {
+  id: string;
+  inventory_id: string;
+  product_id: string;
+  variant_id?: string | null;
+  warehouse_id: string;
+  batch_number: string;
+  manufactured_date?: string | null;
+  expiry_date?: string | null;
+  received_quantity: number;
+  remaining_quantity: number;
+  status: BatchStatus;
+  cost_price?: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BatchListResponse {
+  items: BatchItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type SerialStatus = 'available' | 'reserved' | 'sold' | 'returned' | 'damaged';
+
+export interface SerialNumberItem {
+  id: string;
+  inventory_id: string;
+  product_id: string;
+  variant_id?: string | null;
+  warehouse_id: string;
+  batch_id?: string | null;
+  bin_id?: string | null;
+  serial: string;
+  status: SerialStatus;
+  sold_at?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SerialNumberListResponse {
+  items: SerialNumberItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type PurchaseOrderStatus = 'draft' | 'sent' | 'partially_received' | 'received' | 'cancelled';
+
+export interface PurchaseOrderItem {
+  id: string;
+  po_number: string;
+  supplier_name: string;
+  supplier_email?: string | null;
+  supplier_phone?: string | null;
+  warehouse_id: string;
+  status: PurchaseOrderStatus;
+  currency: string;
+  subtotal: number;
+  tax_amount: number;
+  shipping_amount: number;
+  total: number;
+  expected_date?: string | null;
+  sent_at?: string | null;
+  received_at?: string | null;
+  cancelled_at?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PurchaseOrderListResponse {
+  items: PurchaseOrderItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface PurchaseOrderLineItem {
+  id: string;
+  purchase_order_id: string;
+  product_id: string;
+  variant_id?: string | null;
+  quantity_ordered: number;
+  quantity_received: number;
+  unit_cost: number;
+  tax_rate?: number | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PurchaseOrderDetail extends PurchaseOrderItem {
+  items: PurchaseOrderLineItem[];
+}
+
+export type GoodsReceiptStatus = 'draft' | 'completed' | 'cancelled';
+
+export interface GoodsReceiptItem {
+  id: string;
+  receipt_number: string;
+  purchase_order_id?: string | null;
+  warehouse_id: string;
+  receiver_id?: string | null;
+  received_date: string;
+  status: GoodsReceiptStatus;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoodsReceiptListResponse {
+  items: GoodsReceiptItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface GoodsReceiptLineItem {
+  id: string;
+  goods_receipt_id: string;
+  purchase_order_item_id?: string | null;
+  product_id: string;
+  variant_id?: string | null;
+  quantity_received: number;
+  unit_cost?: number | null;
+  batch_number?: string | null;
+  expiry_date?: string | null;
+  manufactured_date?: string | null;
+  bin_id?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoodsReceiptDetail extends GoodsReceiptItem {
+  items: GoodsReceiptLineItem[];
+}
+
+export type StockTransferStatus = 'draft' | 'packed' | 'shipped' | 'received' | 'cancelled';
+
+export interface StockTransferItem {
+  id: string;
+  transfer_number: string;
+  from_warehouse_id: string;
+  to_warehouse_id: string;
+  status: StockTransferStatus;
+  shipped_at?: string | null;
+  received_at?: string | null;
+  cancelled_at?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StockTransferListResponse {
+  items: StockTransferItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface StockTransferLineItem {
+  id: string;
+  stock_transfer_id: string;
+  product_id: string;
+  variant_id?: string | null;
+  quantity_requested: number;
+  quantity_shipped: number;
+  quantity_received: number;
+  batch_id?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StockTransferDetail extends StockTransferItem {
+  items: StockTransferLineItem[];
+}
+
+export type StockAdjustmentReason = 'damage' | 'lost' | 'found' | 'audit' | 'manual';
+
+export interface StockAdjustmentItem {
+  id: string;
+  adjustment_number: string;
+  inventory_id: string;
+  product_id: string;
+  variant_id?: string | null;
+  warehouse_id: string;
+  bin_id?: string | null;
+  quantity_delta: number;
+  reason: StockAdjustmentReason;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StockAdjustmentListResponse {
+  items: StockAdjustmentItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type CycleCountStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+
+export interface CycleCountItem {
+  id: string;
+  count_number: string;
+  warehouse_id: string;
+  zone_id?: string | null;
+  status: CycleCountStatus;
+  scheduled_date?: string | null;
+  started_at?: string | null;
+  completed_at?: string | null;
+  assigned_to?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CycleCountListResponse {
+  items: CycleCountItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CycleCountLineItem {
+  id: string;
+  cycle_count_id: string;
+  inventory_id: string;
+  product_id: string;
+  variant_id?: string | null;
+  bin_id?: string | null;
+  expected_quantity: number;
+  actual_quantity?: number | null;
+  variance?: number | null;
+  counted_at?: string | null;
+  counted_by?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CycleCountDetail extends CycleCountItem {
+  items: CycleCountLineItem[];
+}
