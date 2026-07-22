@@ -25,7 +25,7 @@ from app.utils.text import slugify
 
 
 def _build_organization_slug(name: str) -> str:
-    return slugify(name)
+    return slugify(name, fallback="organization")
 
 
 class AuthService:

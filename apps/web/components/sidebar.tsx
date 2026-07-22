@@ -1,12 +1,23 @@
 'use client';
 
 import {
+  Award,
   Bell,
   Building2,
   FolderOpen,
+  FolderTree,
+  Layers,
+  Layers3,
   LayoutDashboard,
+  ListPlus,
+  ListTree,
+  Package,
+  Percent,
+  Radio,
   ScrollText,
   Settings,
+  Tag as TagIcon,
+  Ticket,
   UserCircle,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -22,6 +33,17 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/catalog/categories', label: 'Categories', icon: FolderTree, permission: 'catalog.categories.view' },
+  { href: '/dashboard/catalog/brands', label: 'Brands', icon: Award, permission: 'catalog.brands.view' },
+  { href: '/dashboard/catalog/attributes', label: 'Attributes', icon: ListTree, permission: 'catalog.attributes.view' },
+  { href: '/dashboard/catalog/products', label: 'Products', icon: Package, permission: 'catalog.products.view' },
+  { href: '/dashboard/catalog/product-types', label: 'Product Types', icon: Layers3, permission: 'catalog.products.view' },
+  { href: '/dashboard/catalog/collections', label: 'Collections', icon: Layers, permission: 'catalog.collections.view' },
+  { href: '/dashboard/catalog/tax', label: 'Tax', icon: Percent, permission: 'catalog.tax.manage' },
+  { href: '/dashboard/catalog/coupons', label: 'Coupons', icon: Ticket, permission: 'catalog.coupons.view' },
+  { href: '/dashboard/catalog/tags', label: 'Tags', icon: TagIcon, permission: 'catalog.products.view' },
+  { href: '/dashboard/catalog/channels', label: 'Channels', icon: Radio, permission: 'catalog.products.view' },
+  { href: '/dashboard/catalog/custom-fields', label: 'Custom Fields', icon: ListPlus, permission: 'catalog.products.view' },
   { href: '/dashboard/files', label: 'Files', icon: FolderOpen, permission: 'files' },
   { href: '/dashboard/audit', label: 'Audit Logs', icon: ScrollText, permission: 'audit' },
   { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },

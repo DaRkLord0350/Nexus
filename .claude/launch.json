@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "apps/web", "run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "apps/api/venv/Scripts/python.exe",
+      "runtimeArgs": ["apps/api/dev_server_local.py"],
+      "port": 8000
     }
   ]
 }

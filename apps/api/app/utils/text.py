@@ -2,7 +2,7 @@ import re
 import unicodedata
 
 
-def slugify(value: str) -> str:
+def slugify(value: str, fallback: str = "item") -> str:
     normalized = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
     slug = re.sub(r"[^a-zA-Z0-9]+", "-", normalized).strip("-").lower()
-    return slug or "organization"
+    return slug or fallback

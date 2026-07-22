@@ -1,9 +1,6 @@
 import asyncio
-import base64
 import hashlib
-import hmac
 import tempfile
-import time
 from io import BytesIO
 from pathlib import Path
 from typing import IO
@@ -19,12 +16,10 @@ from app.models.folder import Folder
 from app.repositories.file_repository import FileRepository
 from app.repositories.folder_repository import FolderRepository
 from app.storage.factory import build_storage_adapter
+from app.utils.file_streaming import STREAM_CHUNK_SIZE, SPOOL_MAX_SIZE, stream_to_temp_with_checksum
 from app.utils.file_utils import get_extension, parse_metadata, secure_filename
+from app.utils.signed_download import generate_download_token, verify_download_token
 
-
-DOWNLOAD_TOKEN_DELIMITER = ":"
-STREAM_CHUNK_SIZE = 1024 * 1024  # 1MB
-SPOOL_MAX_SIZE = 5 * 1024 * 1024  # spill to disk beyond 5MB
 IMAGE_OPTIMIZATION_MAX_BYTES = 15 * 1024 * 1024
 
 
@@ -173,7 +168,7 @@ class FileService:
             if not folder:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Folder not found.")
 
-        checksum, size_bytes, spooled = await self._stream_to_temp(uploaded_file)
+        checksum, size_bytes, spooled = await stream_to_temp_with_checksum(uploaded_file, settings.file_upload_max_bytes)
         try:
             if size_bytes == 0:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File is empty.")
@@ -230,7 +225,7 @@ class FileService:
         if content_type not in settings.allowed_file_mime_types:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported file type.")
 
-        checksum, size_bytes, spooled = await self._stream_to_temp(uploaded_file)
+        checksum, size_bytes, spooled = await stream_to_temp_with_checksum(uploaded_file, settings.file_upload_max_bytes)
         try:
             if size_bytes == 0:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File is empty.")
@@ -306,63 +301,18 @@ class FileService:
 
     async def get_signed_url(self, file: File, expires_in: int = 3600) -> str:
         if file.storage_provider == StorageProvider.local:
-            token = self._generate_download_token(file.id, expires_in)
+            token = generate_download_token(file.id, expires_in)
             api_url = str(settings.api_url).rstrip("/")
             return f"{api_url}/api/v1/files/{file.id}/download?token={token}"
 
         return await self.storage_adapter.generate_presigned_url(object_key=file.object_key, bucket=file.bucket, expires_in=expires_in)
 
     def verify_download_token(self, token: str) -> str | None:
-        try:
-            padded_token = token + "=" * (-len(token) % 4)
-            raw = base64.urlsafe_b64decode(padded_token).decode("utf-8")
-            file_id, expires_at_str, signature = raw.rsplit(DOWNLOAD_TOKEN_DELIMITER, 2)
-            expires_at = int(expires_at_str)
-        except (ValueError, TypeError):
-            return None
-
-        if expires_at < int(time.time()):
-            return None
-
-        expected = hmac.new(settings.secret_key.encode("utf-8"), f"{file_id}{DOWNLOAD_TOKEN_DELIMITER}{expires_at}".encode("utf-8"), hashlib.sha256).hexdigest()
-        if not hmac.compare_digest(expected, signature):
-            return None
-
-        return file_id
-
-    def _generate_download_token(self, file_id: str, expires_in: int) -> str:
-        expires_at = int(time.time()) + expires_in
-        data = f"{file_id}{DOWNLOAD_TOKEN_DELIMITER}{expires_at}"
-        signature = hmac.new(settings.secret_key.encode("utf-8"), data.encode("utf-8"), hashlib.sha256).hexdigest()
-        token = f"{data}{DOWNLOAD_TOKEN_DELIMITER}{signature}"
-        return base64.urlsafe_b64encode(token.encode("utf-8")).decode("utf-8").rstrip("=")
+        return verify_download_token(token)
 
     # ------------------------------------------------------------------
     # Streaming, scanning, optimization
     # ------------------------------------------------------------------
-    async def _stream_to_temp(self, uploaded_file: UploadFile) -> tuple[str, int, tempfile.SpooledTemporaryFile]:
-        spooled = tempfile.SpooledTemporaryFile(max_size=SPOOL_MAX_SIZE)
-        hasher = hashlib.sha256()
-        total = 0
-        max_bytes = settings.file_upload_max_bytes
-
-        try:
-            while True:
-                chunk = await uploaded_file.read(STREAM_CHUNK_SIZE)
-                if not chunk:
-                    break
-                total += len(chunk)
-                if total > max_bytes:
-                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File exceeds maximum upload size.")
-                hasher.update(chunk)
-                await asyncio.to_thread(spooled.write, chunk)
-        except HTTPException:
-            spooled.close()
-            raise
-
-        spooled.seek(0)
-        return hasher.hexdigest(), total, spooled
-
     async def _scan_stream(self, spooled: IO[bytes]) -> None:
         if not settings.virus_scan_command:
             return

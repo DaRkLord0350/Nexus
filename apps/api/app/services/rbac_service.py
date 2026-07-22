@@ -27,6 +27,28 @@ class RBACService:
         ("ai", "AI", "Manage AI powered automation and assistive workflows."),
         ("shipping", "Shipping", "Manage shipping rules and carrier integrations."),
         ("marketplace", "Marketplace", "Manage marketplace integrations and listings."),
+        ("catalog.categories.view", "View Categories", "View product categories."),
+        ("catalog.categories.manage", "Manage Categories", "Create, edit, delete, and restore product categories."),
+        ("catalog.brands.view", "View Brands", "View product brands."),
+        ("catalog.brands.manage", "Manage Brands", "Create, edit, delete, and restore product brands."),
+        ("catalog.attributes.view", "View Attributes", "View product attributes and their values."),
+        ("catalog.attributes.manage", "Manage Attributes", "Create, edit, and delete product attributes and their values."),
+        ("catalog.products.view", "View Products", "View products in the catalog."),
+        ("catalog.products.create", "Create Products", "Create new products."),
+        ("catalog.products.edit", "Edit Products", "Edit, publish, and archive products."),
+        ("catalog.products.delete", "Delete Products", "Delete and restore products."),
+        ("catalog.variants.manage", "Manage Variants", "Create, edit, and delete product variants."),
+        ("catalog.media.manage", "Manage Media", "Upload, reorder, and delete product and variant media."),
+        ("catalog.collections.view", "View Collections", "View manual and dynamic product collections."),
+        ("catalog.collections.manage", "Manage Collections", "Create, edit, and delete product collections."),
+        ("catalog.pricing.manage", "Manage Pricing", "Create, edit, and delete product and variant pricing."),
+        ("catalog.tax.manage", "Manage Tax", "Create, edit, and delete tax classes and tax rates."),
+        ("catalog.coupons.view", "View Coupons", "View coupons and validate codes."),
+        ("catalog.coupons.manage", "Manage Coupons", "Create, edit, and delete coupons."),
+        ("catalog.tags.manage", "Manage Tags", "Create, edit, and delete product tags."),
+        ("catalog.product_types.manage", "Manage Product Types", "Create, edit, and delete product types and their attribute sets."),
+        ("catalog.channels.manage", "Manage Channels", "Create, edit, and delete sales channels and assign products to them."),
+        ("catalog.custom_fields.manage", "Manage Custom Fields", "Create, edit, and delete custom field definitions and their values."),
     ]
 
     DEFAULT_ROLES = {
@@ -40,7 +62,19 @@ class RBACService:
         ),
         "Manager": DefaultRole(
             description="Manage products, orders, inventory, and analytics.",
-            permissions=["products", "orders", "inventory", "analytics"],
+            permissions=[
+                "products", "orders", "inventory", "analytics",
+                "catalog.categories.view", "catalog.categories.manage",
+                "catalog.brands.view", "catalog.brands.manage",
+                "catalog.attributes.view", "catalog.attributes.manage",
+                "catalog.products.view", "catalog.products.create", "catalog.products.edit", "catalog.products.delete",
+                "catalog.variants.manage", "catalog.media.manage",
+                "catalog.collections.view", "catalog.collections.manage",
+                "catalog.pricing.manage", "catalog.tax.manage",
+                "catalog.coupons.view", "catalog.coupons.manage",
+                "catalog.tags.manage", "catalog.product_types.manage", "catalog.channels.manage",
+                "catalog.custom_fields.manage",
+            ],
         ),
         "Warehouse Manager": DefaultRole(
             description="Manage warehouse and inventory operations.",
@@ -48,11 +82,15 @@ class RBACService:
         ),
         "Finance": DefaultRole(
             description="Manage financial reporting and billing workflows.",
-            permissions=["finance", "orders"],
+            permissions=["finance", "orders", "catalog.pricing.manage", "catalog.tax.manage"],
         ),
         "Marketing": DefaultRole(
             description="Manage campaigns, marketplace, and analytics.",
-            permissions=["analytics", "ai", "marketplace"],
+            permissions=[
+                "analytics", "ai", "marketplace",
+                "catalog.collections.view", "catalog.collections.manage",
+                "catalog.coupons.view", "catalog.coupons.manage",
+            ],
         ),
         "Support": DefaultRole(
             description="Provide customer support and order assistance.",
@@ -60,7 +98,7 @@ class RBACService:
         ),
         "Staff": DefaultRole(
             description="Day-to-day operational access based on assigned tasks.",
-            permissions=["orders", "products"],
+            permissions=["orders", "products", "catalog.categories.view", "catalog.brands.view", "catalog.attributes.view", "catalog.products.view", "catalog.collections.view", "catalog.coupons.view"],
         ),
         "Custom Role": DefaultRole(
             description="Custom role with organization-specific permissions.",
