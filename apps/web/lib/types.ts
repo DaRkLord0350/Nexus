@@ -1033,3 +1033,26 @@ export interface CycleCountLineItem {
 export interface CycleCountDetail extends CycleCountItem {
   items: CycleCountLineItem[];
 }
+
+export interface ReorderRuleItem {
+  id: string;
+  product_id: string;
+  variant_id?: string | null;
+  warehouse_id: string;
+  minimum_stock: number;
+  maximum_stock?: number | null;
+  reorder_quantity: number;
+  supplier_name?: string | null;
+  lead_time_days?: number | null;
+  is_active: boolean;
+  last_triggered_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReorderRuleListResponse {
+  items: ReorderRuleItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}

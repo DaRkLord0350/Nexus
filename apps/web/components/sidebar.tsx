@@ -22,6 +22,7 @@ import {
   Percent,
   QrCode,
   Radio,
+  RefreshCw,
   ScrollText,
   Settings,
   SlidersHorizontal,
@@ -54,6 +55,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/catalog/tags', label: 'Tags', icon: TagIcon, permission: 'catalog.products.view' },
   { href: '/dashboard/catalog/channels', label: 'Channels', icon: Radio, permission: 'catalog.products.view' },
   { href: '/dashboard/catalog/custom-fields', label: 'Custom Fields', icon: ListPlus, permission: 'catalog.products.view' },
+  { href: '/dashboard/inventory', label: 'Inventory Dashboard', icon: LayoutDashboard, permission: 'inventory.stock.view' },
   { href: '/dashboard/inventory/warehouses', label: 'Warehouses', icon: Warehouse, permission: 'inventory.warehouses.view' },
   { href: '/dashboard/inventory/stock', label: 'Inventory', icon: PackageSearch, permission: 'inventory.stock.view' },
   { href: '/dashboard/inventory/barcodes', label: 'Barcode Center', icon: QrCode, permission: 'inventory.barcodes.view' },
@@ -64,6 +66,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/inventory/transfers', label: 'Transfers', icon: ArrowLeftRight, permission: 'inventory.transfers.view' },
   { href: '/dashboard/inventory/adjustments', label: 'Stock Adjustments', icon: SlidersHorizontal, permission: 'inventory.adjustments.view' },
   { href: '/dashboard/inventory/cycle-counts', label: 'Cycle Counts', icon: ClipboardCheck, permission: 'inventory.cycle_counts.view' },
+  { href: '/dashboard/inventory/reorder-rules', label: 'Reorder Rules', icon: RefreshCw, permission: 'inventory.reorder_rules.view' },
   { href: '/dashboard/files', label: 'Files', icon: FolderOpen, permission: 'files' },
   { href: '/dashboard/audit', label: 'Audit Logs', icon: ScrollText, permission: 'audit' },
   { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
@@ -76,11 +79,24 @@ export function Sidebar() {
   const pathname = usePathname();
   const { hasPermission, isLoading } = useAuth();
 
+
+  console.log("Loading:", isLoading);
+  NAV_ITEMS.forEach((item) => {
+    console.log(
+      item.label,
+      item.permission,
+      item.permission ? hasPermission(item.permission) : "No permission"
+    );
+  });
+
+  
   const items = NAV_ITEMS.filter((item) => !item.permission || isLoading || hasPermission(item.permission));
+  console.log("Filtered items:", items.length);
+  console.log(items.map(i => i.label));
 
   return (
-    <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white/80 px-4 py-6 dark:border-slate-800 dark:bg-slate-900/60 lg:block">
-      <nav className="space-y-1">
+    <aside className="hidden lg:flex lg:w-64 lg:shrink-0 lg:flex-col border-r border-slate-200 bg-white/80 dark:border-slate-800 dark:bg-slate-900/60">
+      <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
         {items.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname?.startsWith(item.href));
           const Icon = item.icon;

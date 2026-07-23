@@ -30,7 +30,10 @@ export function AuditDetailsDrawer({ log, onClose }: { log: AuditLogItem; onClos
           <Row label="IP address" value={log.ip_address ?? '—'} />
           <Row label="Browser / agent" value={log.user_agent ?? '—'} />
           <Row label="Request ID" value={log.request_id ?? '—'} />
-          <Row label="Timestamp" value={new Date(log.created_at).toLocaleString()} />
+          <Row label="Timestamp" value={new Intl.DateTimeFormat("en-IN", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }).format(new Date(log.created_at))} />
 
           {log.before ? (
             <div>

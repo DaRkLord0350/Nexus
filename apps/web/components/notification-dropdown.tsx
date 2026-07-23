@@ -11,7 +11,12 @@ export function NotificationDropdown() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const token = getAccessToken();
+  // const token = getAccessToken();
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setToken(getAccessToken());
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -64,7 +69,13 @@ export function NotificationDropdown() {
     setUnreadCount((current) => Math.max(0, current - 1));
   };
 
-  if (!token) return null;
+  // if (!token) return null;
+  if (token === null) {
+  return (
+    <div className="h-9 w-9" />
+  );
+}
+
 
   return (
     <div className="relative" ref={containerRef}>
