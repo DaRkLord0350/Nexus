@@ -1,0 +1,152 @@
+"""add orders tables (Phase 4 Orders: orders, order_items, order_status_history, order_notes)"""
+from alembic import op
+import sqlalchemy as sa
+
+revision = 'd9f3b6e2c714'
+down_revision = 'c7e1a9f4b826'
+branch_labels = None
+depends_on = None
+
+
+def upgrade() -> None:
+    op.create_table(
+        'orders',
+        sa.Column('id', sa.String(length=36), primary_key=True, nullable=False),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('deleted_at', sa.DateTime(), nullable=True),
+        sa.Column('organization_id', sa.String(length=36), nullable=False, index=True),
+        sa.Column('order_number', sa.String(length=50), nullable=False, index=True),
+        sa.Column('customer_id', sa.String(length=36), nullable=False, index=True),
+        sa.Column('cart_id', sa.String(length=36), nullable=True, index=True),
+        sa.Column('status', sa.String(length=32), nullable=False, server_default='pending'),
+        sa.Column('previous_status', sa.String(length=32), nullable=True),
+        sa.Column('priority', sa.String(length=16), nullable=False, server_default='normal'),
+        sa.Column('currency', sa.String(length=3), nullable=False, server_default='USD'),
+        sa.Column('subtotal', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('discount_amount', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('tax_amount', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('shipping_amount', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('total', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('amount_paid', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('amount_refunded', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('coupon_id', sa.String(length=36), nullable=True, index=True),
+        sa.Column('coupon_code', sa.String(length=64), nullable=True),
+        sa.Column('payment_method', sa.String(length=32), nullable=True),
+        sa.Column('payment_status', sa.String(length=32), nullable=False, server_default='pending'),
+        sa.Column('shipping_method', sa.String(length=128), nullable=True),
+        sa.Column('billing_address_id', sa.String(length=36), nullable=True),
+        sa.Column('billing_first_name', sa.String(length=128), nullable=True),
+        sa.Column('billing_last_name', sa.String(length=128), nullable=True),
+        sa.Column('billing_company', sa.String(length=255), nullable=True),
+        sa.Column('billing_phone', sa.String(length=50), nullable=True),
+        sa.Column('billing_line1', sa.String(length=255), nullable=True),
+        sa.Column('billing_line2', sa.String(length=255), nullable=True),
+        sa.Column('billing_city', sa.String(length=128), nullable=True),
+        sa.Column('billing_state', sa.String(length=128), nullable=True),
+        sa.Column('billing_postal_code', sa.String(length=32), nullable=True),
+        sa.Column('billing_country', sa.String(length=2), nullable=True),
+        sa.Column('shipping_address_id', sa.String(length=36), nullable=True),
+        sa.Column('shipping_first_name', sa.String(length=128), nullable=True),
+        sa.Column('shipping_last_name', sa.String(length=128), nullable=True),
+        sa.Column('shipping_company', sa.String(length=255), nullable=True),
+        sa.Column('shipping_phone', sa.String(length=50), nullable=True),
+        sa.Column('shipping_line1', sa.String(length=255), nullable=True),
+        sa.Column('shipping_line2', sa.String(length=255), nullable=True),
+        sa.Column('shipping_city', sa.String(length=128), nullable=True),
+        sa.Column('shipping_state', sa.String(length=128), nullable=True),
+        sa.Column('shipping_postal_code', sa.String(length=32), nullable=True),
+        sa.Column('shipping_country', sa.String(length=2), nullable=True),
+        sa.Column('customer_note', sa.Text(), nullable=True),
+        sa.Column('gift_note', sa.Text(), nullable=True),
+        sa.Column('cancelled_reason', sa.Text(), nullable=True),
+        sa.Column('tags', sa.String(length=500), nullable=True),
+        sa.Column('fraud_score', sa.Float(), nullable=True),
+        sa.Column('risk_score', sa.Float(), nullable=True),
+        sa.Column('requires_manual_review', sa.Boolean(), nullable=False, server_default=sa.text('false')),
+        sa.Column('source', sa.String(length=32), nullable=False, server_default='web'),
+        sa.Column('placed_at', sa.DateTime(), nullable=True),
+        sa.Column('confirmed_at', sa.DateTime(), nullable=True),
+        sa.Column('packed_at', sa.DateTime(), nullable=True),
+        sa.Column('shipped_at', sa.DateTime(), nullable=True),
+        sa.Column('delivered_at', sa.DateTime(), nullable=True),
+        sa.Column('cancelled_at', sa.DateTime(), nullable=True),
+        sa.Column('created_by', sa.String(length=36), nullable=True, index=True),
+        sa.ForeignKeyConstraint(['organization_id'], ['organizations.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['customer_id'], ['customers.id']),
+        sa.ForeignKeyConstraint(['cart_id'], ['carts.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['coupon_id'], ['coupons.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['billing_address_id'], ['addresses.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['shipping_address_id'], ['addresses.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['created_by'], ['users.id']),
+        sa.UniqueConstraint('organization_id', 'order_number', name='uq_order_organization_number'),
+    )
+
+    op.create_table(
+        'order_items',
+        sa.Column('id', sa.String(length=36), primary_key=True, nullable=False),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('deleted_at', sa.DateTime(), nullable=True),
+        sa.Column('organization_id', sa.String(length=36), nullable=False, index=True),
+        sa.Column('order_id', sa.String(length=36), nullable=False, index=True),
+        sa.Column('product_id', sa.String(length=36), nullable=False, index=True),
+        sa.Column('variant_id', sa.String(length=36), nullable=True, index=True),
+        sa.Column('warehouse_id', sa.String(length=36), nullable=True, index=True),
+        sa.Column('sku', sa.String(length=100), nullable=False),
+        sa.Column('product_name', sa.String(length=255), nullable=False),
+        sa.Column('quantity', sa.Integer(), nullable=False),
+        sa.Column('quantity_fulfilled', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('quantity_returned', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('unit_price', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('discount_amount', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('tax_amount', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('total', sa.Float(), nullable=False, server_default='0'),
+        sa.Column('gift_note', sa.Text(), nullable=True),
+        sa.ForeignKeyConstraint(['organization_id'], ['organizations.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['product_id'], ['products.id']),
+        sa.ForeignKeyConstraint(['variant_id'], ['variants.id']),
+        sa.ForeignKeyConstraint(['warehouse_id'], ['warehouses.id']),
+    )
+
+    op.create_table(
+        'order_status_history',
+        sa.Column('id', sa.String(length=36), primary_key=True, nullable=False),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('deleted_at', sa.DateTime(), nullable=True),
+        sa.Column('organization_id', sa.String(length=36), nullable=False, index=True),
+        sa.Column('order_id', sa.String(length=36), nullable=False, index=True),
+        sa.Column('from_status', sa.String(length=32), nullable=True),
+        sa.Column('to_status', sa.String(length=32), nullable=False),
+        sa.Column('notes', sa.Text(), nullable=True),
+        sa.Column('changed_by', sa.String(length=36), nullable=True, index=True),
+        sa.Column('changed_at', sa.DateTime(), nullable=False),
+        sa.ForeignKeyConstraint(['organization_id'], ['organizations.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['changed_by'], ['users.id']),
+    )
+
+    op.create_table(
+        'order_notes',
+        sa.Column('id', sa.String(length=36), primary_key=True, nullable=False),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('deleted_at', sa.DateTime(), nullable=True),
+        sa.Column('organization_id', sa.String(length=36), nullable=False, index=True),
+        sa.Column('order_id', sa.String(length=36), nullable=False, index=True),
+        sa.Column('note', sa.Text(), nullable=False),
+        sa.Column('is_customer_visible', sa.Boolean(), nullable=False, server_default=sa.text('false')),
+        sa.Column('created_by', sa.String(length=36), nullable=True, index=True),
+        sa.ForeignKeyConstraint(['organization_id'], ['organizations.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['created_by'], ['users.id']),
+    )
+
+
+def downgrade() -> None:
+    op.drop_table('order_notes')
+    op.drop_table('order_status_history')
+    op.drop_table('order_items')
+    op.drop_table('orders')

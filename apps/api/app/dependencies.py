@@ -11,6 +11,7 @@ from app.services.permission_service import PermissionService
 from app.utils.security import decode_token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+_optional_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/customers/auth/login", auto_error=False)
 
 
 async def get_tenant_context(request: Request) -> TenantContext:
@@ -77,6 +78,54 @@ async def get_current_user_optional(token: str | None = Depends(oauth2_scheme), 
         return None
 
     return user
+
+
+async def get_current_customer(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
+    from app.repositories.customer_repository import CustomerRepository
+
+    try:
+        payload = decode_token(token)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials.")
+
+    if payload.get("typ") != "customer":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials.")
+
+    customer_id = payload.get("sub")
+    organization_id = payload.get("oid")
+    if not customer_id or not organization_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials.")
+
+    customer = await CustomerRepository(db, organization_id=organization_id).get_by_id(customer_id)
+    if not customer or not customer.is_active:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Customer not found or inactive.")
+
+    return customer
+
+
+async def get_current_customer_optional(token: str | None = Depends(_optional_oauth2_scheme), db: AsyncSession = Depends(get_db)):
+    from app.repositories.customer_repository import CustomerRepository
+
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+    except ValueError:
+        return None
+
+    if payload.get("typ") != "customer":
+        return None
+
+    customer_id = payload.get("sub")
+    organization_id = payload.get("oid")
+    if not customer_id or not organization_id:
+        return None
+
+    customer = await CustomerRepository(db, organization_id=organization_id).get_by_id(customer_id)
+    if not customer or not customer.is_active:
+        return None
+
+    return customer
 
 
 def require_permission(permission_code: str):

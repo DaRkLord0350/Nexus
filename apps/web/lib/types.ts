@@ -1056,3 +1056,608 @@ export interface ReorderRuleListResponse {
   limit: number;
   offset: number;
 }
+
+// ---------------------------------------------------------------------------
+// Phase 4: Customers
+// ---------------------------------------------------------------------------
+
+export interface CustomerItem {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone?: string | null;
+  is_guest: boolean;
+  is_active: boolean;
+  is_verified: boolean;
+  accepts_marketing: boolean;
+  last_login_at?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CustomerListResponse {
+  items: CustomerItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type AddressType = 'billing' | 'shipping' | 'both';
+
+export interface AddressItem {
+  id: string;
+  customer_id: string;
+  label?: string | null;
+  address_type: AddressType;
+  first_name: string;
+  last_name: string;
+  company?: string | null;
+  phone?: string | null;
+  line1: string;
+  line2?: string | null;
+  city: string;
+  state?: string | null;
+  postal_code?: string | null;
+  country: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AddressListResponse {
+  items: AddressItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4: Orders
+// ---------------------------------------------------------------------------
+
+export type OrderStatus =
+  | 'draft'
+  | 'pending'
+  | 'confirmed'
+  | 'processing'
+  | 'packed'
+  | 'ready_to_ship'
+  | 'shipped'
+  | 'out_for_delivery'
+  | 'delivered'
+  | 'cancelled'
+  | 'failed'
+  | 'hold'
+  | 'partially_fulfilled'
+  | 'backordered';
+
+export type OrderPriority = 'low' | 'normal' | 'high' | 'urgent';
+export type PaymentStatus = 'pending' | 'authorized' | 'paid' | 'partially_paid' | 'refunded' | 'partially_refunded' | 'failed';
+
+export interface OrderRead {
+  id: string;
+  order_number: string;
+  customer_id: string;
+  cart_id?: string | null;
+  status: OrderStatus;
+  previous_status?: OrderStatus | null;
+  priority: OrderPriority;
+  currency: string;
+  subtotal: number;
+  discount_amount: number;
+  tax_amount: number;
+  shipping_amount: number;
+  total: number;
+  amount_paid: number;
+  amount_refunded: number;
+  coupon_id?: string | null;
+  coupon_code?: string | null;
+  payment_method?: string | null;
+  payment_status: PaymentStatus;
+  shipping_method?: string | null;
+  billing_first_name?: string | null;
+  billing_last_name?: string | null;
+  billing_company?: string | null;
+  billing_phone?: string | null;
+  billing_line1?: string | null;
+  billing_line2?: string | null;
+  billing_city?: string | null;
+  billing_state?: string | null;
+  billing_postal_code?: string | null;
+  billing_country?: string | null;
+  shipping_first_name?: string | null;
+  shipping_last_name?: string | null;
+  shipping_company?: string | null;
+  shipping_phone?: string | null;
+  shipping_line1?: string | null;
+  shipping_line2?: string | null;
+  shipping_city?: string | null;
+  shipping_state?: string | null;
+  shipping_postal_code?: string | null;
+  shipping_country?: string | null;
+  customer_note?: string | null;
+  gift_note?: string | null;
+  cancelled_reason?: string | null;
+  tags?: string | null;
+  fraud_score?: number | null;
+  risk_score?: number | null;
+  requires_manual_review: boolean;
+  source: string;
+  placed_at?: string | null;
+  confirmed_at?: string | null;
+  packed_at?: string | null;
+  shipped_at?: string | null;
+  delivered_at?: string | null;
+  cancelled_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderLineItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  variant_id?: string | null;
+  warehouse_id?: string | null;
+  sku: string;
+  product_name: string;
+  quantity: number;
+  quantity_fulfilled: number;
+  quantity_returned: number;
+  unit_price: number;
+  discount_amount: number;
+  tax_amount: number;
+  total: number;
+  gift_note?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderStatusHistoryRead {
+  id: string;
+  order_id: string;
+  from_status?: string | null;
+  to_status: string;
+  notes?: string | null;
+  changed_by?: string | null;
+  changed_at: string;
+}
+
+export interface OrderNoteRead {
+  id: string;
+  order_id: string;
+  note: string;
+  is_customer_visible: boolean;
+  created_by?: string | null;
+  created_at: string;
+}
+
+export interface OrderDetail extends OrderRead {
+  items: OrderLineItem[];
+  status_history: OrderStatusHistoryRead[];
+  notes: OrderNoteRead[];
+}
+
+export interface OrderListResponse {
+  items: OrderRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4: Payments & Invoices
+// ---------------------------------------------------------------------------
+
+export type PaymentAttemptStatus = 'pending' | 'authorized' | 'captured' | 'failed' | 'refunded' | 'cancelled';
+
+export interface PaymentAttemptRead {
+  id: string;
+  order_id: string;
+  method: string;
+  gateway: string;
+  status: PaymentAttemptStatus;
+  amount: number;
+  currency: string;
+  gateway_reference?: string | null;
+  failure_reason?: string | null;
+  idempotency_key?: string | null;
+  initiated_at: string;
+  completed_at?: string | null;
+  created_at: string;
+}
+
+export type InvoiceStatus = 'issued' | 'paid' | 'void';
+
+export interface InvoiceRead {
+  id: string;
+  order_id: string;
+  invoice_number: string;
+  status: InvoiceStatus;
+  currency: string;
+  subtotal: number;
+  discount_amount: number;
+  tax_amount: number;
+  shipping_amount: number;
+  total: number;
+  amount_paid: number;
+  amount_due: number;
+  issued_at?: string | null;
+  due_at?: string | null;
+  voided_at?: string | null;
+  void_reason?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InvoiceListResponse {
+  items: InvoiceRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4: Returns & Refunds
+// ---------------------------------------------------------------------------
+
+export type ReturnStatus = 'requested' | 'approved' | 'rejected' | 'awaiting_pickup' | 'in_transit' | 'received' | 'inspecting' | 'completed' | 'cancelled';
+export type ReturnResolution = 'refund' | 'replacement' | 'exchange' | 'repair' | 'store_credit';
+export type ReturnItemCondition = 'unopened' | 'opened' | 'damaged' | 'defective';
+
+export interface ReturnItemRead {
+  id: string;
+  return_request_id: string;
+  order_item_id: string;
+  product_id: string;
+  variant_id?: string | null;
+  quantity: number;
+  reason_code?: string | null;
+  condition?: ReturnItemCondition | null;
+  image_urls?: string | null;
+  restocked: boolean;
+  restocked_quantity: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReturnRequestRead {
+  id: string;
+  return_number: string;
+  order_id: string;
+  customer_id: string;
+  warehouse_id?: string | null;
+  status: ReturnStatus;
+  resolution?: ReturnResolution | null;
+  reason_code: string;
+  reason_notes?: string | null;
+  inspection_notes?: string | null;
+  inspected_by?: string | null;
+  inspected_at?: string | null;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  rejected_reason?: string | null;
+  requested_at: string;
+  completed_at?: string | null;
+  cancelled_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReturnRequestDetail extends ReturnRequestRead {
+  items: ReturnItemRead[];
+}
+
+export interface ReturnRequestListResponse {
+  items: ReturnRequestRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type RefundMethod = 'original_payment' | 'store_credit' | 'wallet' | 'bank_transfer';
+export type RefundStatus = 'requested' | 'approved' | 'rejected' | 'processing' | 'completed' | 'failed';
+
+export interface RefundItemRead {
+  id: string;
+  refund_id: string;
+  order_item_id: string;
+  quantity?: number | null;
+  amount: number;
+  created_at: string;
+}
+
+export interface RefundRead {
+  id: string;
+  refund_number: string;
+  order_id: string;
+  return_request_id?: string | null;
+  customer_id: string;
+  payment_attempt_id?: string | null;
+  method: RefundMethod;
+  status: RefundStatus;
+  amount: number;
+  currency: string;
+  reason?: string | null;
+  requested_by?: string | null;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  rejected_reason?: string | null;
+  processed_at?: string | null;
+  requested_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RefundDetail extends RefundRead {
+  items: RefundItemRead[];
+}
+
+export interface RefundListResponse {
+  items: RefundRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 5: Shipping
+// ---------------------------------------------------------------------------
+
+export interface ShippingProviderRead {
+  id: string;
+  name: string;
+  code: string;
+  provider_type: string;
+  is_active: boolean;
+  is_default: boolean;
+  priority: number;
+  supports_cod: boolean;
+  supports_insurance: boolean;
+  supports_reverse_pickup: boolean;
+  supports_international: boolean;
+  base_rate?: number | null;
+  base_transit_days?: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ShippingProviderListResponse {
+  items: ShippingProviderRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type ShipmentStatus =
+  | 'pending' | 'label_generated' | 'picked_up' | 'in_transit' | 'out_for_delivery'
+  | 'delivered' | 'failed_delivery' | 'returned_to_origin' | 'cancelled';
+
+export interface ShipmentItemRead {
+  id: string;
+  shipment_id: string;
+  order_item_id: string;
+  product_id: string;
+  variant_id?: string | null;
+  quantity: number;
+  sku: string;
+  product_name: string;
+}
+
+export interface ShipmentRead {
+  id: string;
+  shipment_number: string;
+  order_id: string;
+  warehouse_id: string;
+  shipping_provider_id?: string | null;
+  status: ShipmentStatus;
+  tracking_number?: string | null;
+  carrier_name?: string | null;
+  service_type?: string | null;
+  weight?: number | null;
+  length?: number | null;
+  width?: number | null;
+  height?: number | null;
+  shipping_cost: number;
+  insurance_amount?: number | null;
+  is_cod: boolean;
+  cod_amount?: number | null;
+  expected_delivery_date?: string | null;
+  picked_up_at?: string | null;
+  delivered_at?: string | null;
+  cancelled_at?: string | null;
+  delivery_attempts: number;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ShipmentDetail extends ShipmentRead {
+  items: ShipmentItemRead[];
+}
+
+export interface ShipmentListResponse {
+  items: ShipmentRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CustomerShipmentTrackingRead extends ShipmentDetail {
+  tracking_events: ShipmentTrackingEventRead[];
+}
+
+export interface ShipmentTrackingEventRead {
+  id: string;
+  shipment_id: string;
+  status: string;
+  description?: string | null;
+  location?: string | null;
+  occurred_at: string;
+  source: string;
+  created_at: string;
+}
+
+export type PickupStatus = 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'missed';
+
+export interface PickupRead {
+  id: string;
+  pickup_number: string;
+  warehouse_id: string;
+  shipping_provider_id?: string | null;
+  status: PickupStatus;
+  scheduled_date: string;
+  time_slot?: string | null;
+  contact_name?: string | null;
+  contact_phone?: string | null;
+  notes?: string | null;
+  completed_at?: string | null;
+  cancelled_at?: string | null;
+  cancelled_reason?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PickupListResponse {
+  items: PickupRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type ShippingRuleConditionType = 'weight_greater_than' | 'weight_less_than' | 'is_cod' | 'destination_state' | 'destination_country' | 'order_value_greater_than';
+export type ShippingRuleActionType = 'assign_provider' | 'exclude_provider' | 'prefer_warehouse';
+
+export interface ShippingRuleRead {
+  id: string;
+  name: string;
+  priority: number;
+  is_active: boolean;
+  condition_type: ShippingRuleConditionType;
+  condition_value: string;
+  action_type: ShippingRuleActionType;
+  action_value: string;
+}
+
+export interface ShippingRuleListResponse {
+  items: ShippingRuleRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ShippingRateRead {
+  id: string;
+  shipping_provider_id: string;
+  name: string;
+  origin_country?: string | null;
+  destination_country?: string | null;
+  destination_state?: string | null;
+  min_weight?: number | null;
+  max_weight?: number | null;
+  base_price: number;
+  price_per_kg?: number | null;
+  cod_fee?: number | null;
+  insurance_fee?: number | null;
+  transit_days_min?: number | null;
+  transit_days_max?: number | null;
+  delivery_rating?: number | null;
+  is_active: boolean;
+}
+
+export interface ShippingRateListResponse {
+  items: ShippingRateRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface RateQuote {
+  shipping_provider_id: string;
+  provider_name: string;
+  rate_id?: string | null;
+  cost: number;
+  transit_days_min?: number | null;
+  transit_days_max?: number | null;
+  supports_cod: boolean;
+  supports_insurance: boolean;
+  delivery_rating?: number | null;
+  recommended: boolean;
+  score: number;
+}
+
+export interface RateCompareResponse {
+  quotes: RateQuote[];
+}
+
+export type ReturnShipmentStatus = 'pending' | 'label_generated' | 'reverse_pickup_scheduled' | 'in_transit' | 'received' | 'cancelled';
+
+export interface ReturnShipmentRead {
+  id: string;
+  return_shipment_number: string;
+  return_request_id: string;
+  warehouse_id: string;
+  shipping_provider_id?: string | null;
+  status: ReturnShipmentStatus;
+  tracking_number?: string | null;
+  carrier_name?: string | null;
+  pickup_contact_name?: string | null;
+  pickup_contact_phone?: string | null;
+  pickup_line1?: string | null;
+  pickup_city?: string | null;
+  pickup_state?: string | null;
+  pickup_postal_code?: string | null;
+  pickup_country?: string | null;
+  reverse_pickup_scheduled_at?: string | null;
+  reverse_pickup_completed_at?: string | null;
+  received_at?: string | null;
+  cancelled_at?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReturnShipmentListResponse {
+  items: ReturnShipmentRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CourierPerformanceStats {
+  shipping_provider_id: string;
+  provider_name: string;
+  total_shipments: number;
+  delivered_count: number;
+  delivered_rate: number;
+  failed_delivery_count: number;
+  failed_delivery_rate: number;
+  cod_count: number;
+  cod_rate: number;
+  avg_transit_days?: number | null;
+  total_shipping_cost: number;
+  avg_shipping_cost: number;
+  sla_met_count: number;
+  sla_met_rate?: number | null;
+}
+
+export interface CourierPerformanceSummary {
+  total_shipments: number;
+  delivered_count: number;
+  delivered_rate: number;
+  failed_delivery_count: number;
+  failed_delivery_rate: number;
+  cod_count: number;
+  cod_rate: number;
+  total_shipping_cost: number;
+}
+
+export interface CourierPerformanceResponse {
+  date_from?: string | null;
+  date_to?: string | null;
+  summary: CourierPerformanceSummary;
+  providers: CourierPerformanceStats[];
+}
