@@ -4,6 +4,7 @@ from starlette.websockets import WebSocketState
 import asyncio
 
 from app.core.audit_context import AuditContext
+from app.db import AsyncSessionLocal
 from app.dependencies import get_audit_context, get_current_active_user, get_db, require_permission
 from app.models.user import User
 from app.repositories.session_repository import SessionRepository
@@ -59,10 +60,11 @@ async def _authenticate_websocket(websocket: WebSocket, db: AsyncSession) -> Use
 
 
 @router.websocket("/ws")
-async def notifications_websocket(websocket: WebSocket, db: AsyncSession = Depends(get_db)):
+async def notifications_websocket(websocket: WebSocket):
     await websocket.accept()
     try:
-        user = await _authenticate_websocket(websocket, db)
+        async with AsyncSessionLocal() as db:
+            user = await _authenticate_websocket(websocket, db)
     except HTTPException:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return

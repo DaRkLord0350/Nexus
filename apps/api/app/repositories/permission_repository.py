@@ -22,6 +22,13 @@ class PermissionRepository(BaseRepository):
         await self.session.refresh(permission)
         return permission
 
+    async def bulk_create(self, permissions: list[Permission]) -> list[Permission]:
+        for permission in permissions:
+            self._add_tenant_on_create(permission)
+        self.session.add_all(permissions)
+        await self.session.commit()
+        return permissions
+
     async def list(self) -> list[Permission]:
         statement = select(Permission)
         statement = self._apply_tenant_filter(statement, Permission)

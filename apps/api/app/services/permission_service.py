@@ -18,8 +18,11 @@ class PermissionService:
         if self.is_superuser:
             return True
 
-        statement = (
-            select(Permission.code)
+        # A user can legitimately hold multiple roles that each grant the same
+        # permission (e.g. both "Owner" and "Admin"), so this must be an
+        # existence check rather than assume the join yields at most one row.
+        subquery = (
+            select(Permission.id)
             .join(RolePermission, Permission.id == RolePermission.permission_id)
             .join(Role, Role.id == RolePermission.role_id)
             .join(UserRole, UserRole.role_id == Role.id)
@@ -27,12 +30,19 @@ class PermissionService:
         )
 
         if self.organization_id:
-            statement = statement.where(Permission.organization_id == self.organization_id)
+            subquery = subquery.where(Permission.organization_id == self.organization_id)
 
-        result = await self.session.execute(statement)
-        return result.scalar_one_or_none() is not None
+        result = await self.session.execute(select(subquery.exists()))
+        return bool(result.scalar())
 
     async def get_user_permissions(self, user_id: str) -> list[str]:
+        if self.is_superuser:
+            statement = select(Permission.code).distinct()
+            if self.organization_id:
+                statement = statement.where(Permission.organization_id == self.organization_id)
+            result = await self.session.execute(statement)
+            return [row[0] for row in result.all()]
+
         statement = (
             select(Permission.code)
             .distinct()

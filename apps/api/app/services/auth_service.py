@@ -1,3 +1,5 @@
+import asyncio
+import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -22,6 +24,16 @@ from app.services.rbac_service import RBACService
 from app.utils.security import create_access_token, hash_password, verify_password
 from app.utils.tokens import generate_token, hash_token
 from app.utils.text import slugify
+
+logger = logging.getLogger(__name__)
+
+_background_email_tasks: set[asyncio.Task] = set()
+
+
+def _fire_and_forget(coro) -> None:
+    task = asyncio.create_task(coro)
+    _background_email_tasks.add(task)
+    task.add_done_callback(_background_email_tasks.discard)
 
 
 def _build_organization_slug(name: str) -> str:
@@ -89,9 +101,15 @@ class AuthService:
         await self.email_verification_repo.create(token_record)
 
         verification_url = f"{settings.frontend_url}/verify-email?token={verification_token}"
-        await self.email_service.send_verification_email(user.email, verification_url)
+        _fire_and_forget(self._send_verification_email_safe(user.email, verification_url))
 
         return user
+
+    async def _send_verification_email_safe(self, email: str, verification_url: str) -> None:
+        try:
+            await self.email_service.send_verification_email(email, verification_url)
+        except Exception:
+            logger.exception("Failed to send verification email to %s", email)
 
     async def authenticate_user(self, email: str, password: str) -> User:
         user = await self.user_repo.get_by_email(email)

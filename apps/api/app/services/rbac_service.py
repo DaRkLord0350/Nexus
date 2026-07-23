@@ -2,6 +2,7 @@ from typing import NamedTuple
 
 from app.models.permission import Permission
 from app.models.role import Role
+from app.models.role_permission import RolePermission
 from app.repositories.permission_repository import PermissionRepository
 from app.repositories.role_repository import RoleRepository
 from app.repositories.user_role_repository import UserRoleRepository
@@ -167,27 +168,40 @@ class RBACService:
         self.user_role_repo = UserRoleRepository(session, organization_id, is_superuser)
 
     async def initialize_default_roles_and_permissions(self) -> None:
-        permission_map: dict[str, Permission] = {}
-        for code, name, description in self.DEFAULT_PERMISSIONS:
-            permission = await self.permission_repo.get_by_code(code)
-            if not permission:
-                permission = await self.permission_repo.create(
-                    Permission(code=code, name=name, description=description)
-                )
-            permission_map[code] = permission
+        permission_map: dict[str, Permission] = {p.code: p for p in await self.permission_repo.list()}
+        missing_permissions = [
+            Permission(code=code, name=name, description=description)
+            for code, name, description in self.DEFAULT_PERMISSIONS
+            if code not in permission_map
+        ]
+        if missing_permissions:
+            for permission in await self.permission_repo.bulk_create(missing_permissions):
+                permission_map[permission.code] = permission
 
+        existing_roles = {role.name: role for role in await self.role_repo.list_plain()}
+        missing_roles = [
+            Role(name=role_name, description=default_role.description, built_in=True)
+            for role_name, default_role in self.DEFAULT_ROLES.items()
+            if role_name not in existing_roles
+        ]
+        if missing_roles:
+            for role in await self.role_repo.bulk_create(missing_roles):
+                existing_roles[role.name] = role
+
+        role_ids = [role.id for role in existing_roles.values()]
+        permission_ids_by_role = await self.role_repo.get_permission_ids_for_roles(role_ids)
+
+        new_links: list[RolePermission] = []
         for role_name, default_role in self.DEFAULT_ROLES.items():
-            role = await self.role_repo.get_by_name(role_name)
-            if not role:
-                role = await self.role_repo.create(
-                    Role(name=role_name, description=default_role.description, built_in=True)
-                )
-
-            existing_permission_ids = await self.role_repo.get_permission_ids(role.id)
+            role = existing_roles[role_name]
+            existing_permission_ids = permission_ids_by_role.get(role.id, set())
             for permission_code in default_role.permissions:
                 permission = permission_map.get(permission_code)
                 if permission and permission.id not in existing_permission_ids:
-                    await self.role_repo.add_permission(role, permission)
+                    new_links.append(RolePermission(role_id=role.id, permission_id=permission.id, organization_id=role.organization_id))
+
+        if new_links:
+            await self.role_repo.bulk_add_permissions(new_links)
 
     async def create_role(self, name: str, description: str | None = None, permission_codes: list[str] | None = None, built_in: bool = False) -> Role:
         existing_role = await self.role_repo.get_by_name(name)
