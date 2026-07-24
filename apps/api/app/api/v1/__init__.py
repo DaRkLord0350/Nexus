@@ -26,6 +26,12 @@ from app.api.v1.customers.routes import router as customers_router
 from app.api.v1.dashboard.routes import router as dashboard_router
 from app.api.v1.files.routes import router as files_router
 from app.api.v1.invoices.routes import router as invoices_router
+from app.api.v1.marketplace.analytics.routes import router as marketplace_analytics_router
+from app.api.v1.marketplace.connectors.routes import router as marketplace_connectors_router
+from app.api.v1.marketplace.orders.routes import router as marketplace_orders_router
+from app.api.v1.marketplace.products.routes import router as marketplace_products_router
+from app.api.v1.marketplace.sync.routes import router as marketplace_sync_router
+from app.api.v1.marketplace.webhooks.routes import router as marketplace_webhooks_router
 from app.api.v1.orders.routes import router as orders_router
 from app.api.v1.inventory.adjustments.routes import router as inventory_adjustments_router
 from app.api.v1.inventory.barcodes.routes import router as inventory_barcodes_router
@@ -91,6 +97,12 @@ api_router.include_router(inventory_stock_router, prefix="/inventory")
 api_router.include_router(inventory_transfers_router, prefix="/inventory")
 api_router.include_router(inventory_warehouses_router, prefix="/inventory")
 api_router.include_router(invoices_router)
+api_router.include_router(marketplace_analytics_router, prefix="/marketplace")
+api_router.include_router(marketplace_connectors_router, prefix="/marketplace")
+api_router.include_router(marketplace_orders_router, prefix="/marketplace")
+api_router.include_router(marketplace_products_router, prefix="/marketplace")
+api_router.include_router(marketplace_sync_router, prefix="/marketplace")
+api_router.include_router(marketplace_webhooks_router, prefix="/marketplace")
 api_router.include_router(notifications_router)
 api_router.include_router(orders_router)
 api_router.include_router(organizations_router)

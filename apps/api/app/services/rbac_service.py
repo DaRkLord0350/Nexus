@@ -101,6 +101,13 @@ class RBACService:
         ("shipping.returns.view", "View Return Shipments", "View reverse-logistics return shipments and tracking."),
         ("shipping.returns.manage", "Manage Return Shipments", "Create and manage reverse-logistics return shipments."),
         ("shipping.analytics.view", "View Shipping Analytics", "View courier performance and shipping analytics dashboards."),
+        ("marketplace.connectors.view", "View Marketplace Connectors", "View configured marketplace connectors and their sync settings."),
+        ("marketplace.connectors.manage", "Manage Marketplace Connectors", "Create, edit, and delete marketplace connector configurations."),
+        ("marketplace.listings.view", "View Marketplace Listings", "View product listings synced to marketplace connectors."),
+        ("marketplace.orders.view", "View Marketplace Orders", "View orders imported from marketplace connectors."),
+        ("marketplace.sync.view", "View Marketplace Sync", "View marketplace sync logs and webhook event history."),
+        ("marketplace.sync.manage", "Manage Marketplace Sync", "Trigger product, inventory, price, and order sync, and retry failed webhook events."),
+        ("marketplace.analytics.view", "View Marketplace Analytics", "View marketplace sync performance and revenue dashboards."),
     ]
 
     DEFAULT_ROLES = {
@@ -148,6 +155,10 @@ class RBACService:
                 "shipping.rules.view", "shipping.rules.manage",
                 "shipping.returns.view", "shipping.returns.manage",
                 "shipping.analytics.view",
+                "marketplace.connectors.view", "marketplace.connectors.manage",
+                "marketplace.listings.view", "marketplace.orders.view",
+                "marketplace.sync.view", "marketplace.sync.manage",
+                "marketplace.analytics.view",
             ],
         ),
         "Warehouse Manager": DefaultRole(
@@ -182,6 +193,9 @@ class RBACService:
                 "analytics", "ai", "marketplace",
                 "catalog.collections.view", "catalog.collections.manage",
                 "catalog.coupons.view", "catalog.coupons.manage",
+                "marketplace.connectors.view", "marketplace.listings.view",
+                "marketplace.orders.view", "marketplace.sync.view",
+                "marketplace.sync.manage", "marketplace.analytics.view",
             ],
         ),
         "Support": DefaultRole(

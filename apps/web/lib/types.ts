@@ -1661,3 +1661,145 @@ export interface CourierPerformanceResponse {
   summary: CourierPerformanceSummary;
   providers: CourierPerformanceStats[];
 }
+
+export type MarketplaceConnectorType = 'woocommerce' | 'amazon' | 'flipkart' | 'shopify' | 'etsy' | 'ebay' | 'other';
+
+export interface MarketplaceConnectorRead {
+  id: string;
+  name: string;
+  code: string;
+  connector_type: string;
+  is_active: boolean;
+  store_url?: string | null;
+  auto_sync_products: boolean;
+  auto_sync_orders: boolean;
+  auto_sync_inventory: boolean;
+  auto_sync_prices: boolean;
+  sync_interval_minutes: number;
+  last_sync_at?: string | null;
+  last_sync_status?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MarketplaceConnectorListResponse {
+  items: MarketplaceConnectorRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface MarketplaceProductLinkRead {
+  id: string;
+  marketplace_connector_id: string;
+  product_id: string;
+  external_id?: string | null;
+  external_sku?: string | null;
+  external_url?: string | null;
+  sync_status: string;
+  last_synced_at?: string | null;
+  last_error?: string | null;
+  last_synced_price?: number | null;
+  last_synced_quantity?: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MarketplaceProductLinkListResponse {
+  items: MarketplaceProductLinkRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface MarketplaceOrderLinkRead {
+  id: string;
+  marketplace_connector_id: string;
+  order_id?: string | null;
+  external_order_id: string;
+  external_order_number?: string | null;
+  status: string;
+  last_error?: string | null;
+  imported_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MarketplaceOrderLinkListResponse {
+  items: MarketplaceOrderLinkRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface MarketplaceSyncLogRead {
+  id: string;
+  marketplace_connector_id: string;
+  sync_type: string;
+  status: string;
+  triggered_by: string;
+  items_processed: number;
+  items_succeeded: number;
+  items_failed: number;
+  started_at: string;
+  completed_at?: string | null;
+  error_message?: string | null;
+  created_at: string;
+}
+
+export interface MarketplaceSyncLogListResponse {
+  items: MarketplaceSyncLogRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface MarketplaceWebhookEventRead {
+  id: string;
+  marketplace_connector_id: string;
+  event_type: string;
+  status: string;
+  retry_count: number;
+  next_retry_at?: string | null;
+  last_error?: string | null;
+  received_at: string;
+  processed_at?: string | null;
+}
+
+export interface MarketplaceWebhookEventListResponse {
+  items: MarketplaceWebhookEventRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface MarketplaceConnectorStats {
+  marketplace_connector_id: string;
+  connector_name: string;
+  connector_type: string;
+  total_syncs: number;
+  successful_syncs: number;
+  sync_success_rate: number;
+  failed_syncs: number;
+  orders_imported: number;
+  orders_failed: number;
+  revenue_imported: number;
+  products_linked: number;
+  products_failed: number;
+  avg_sync_duration_seconds?: number | null;
+}
+
+export interface MarketplaceAnalyticsSummary {
+  total_syncs: number;
+  sync_success_rate: number;
+  total_orders_imported: number;
+  total_revenue_imported: number;
+  pending_webhook_retries: number;
+}
+
+export interface MarketplaceAnalyticsResponse {
+  date_from?: string | null;
+  date_to?: string | null;
+  summary: MarketplaceAnalyticsSummary;
+  connectors: MarketplaceConnectorStats[];
+}
